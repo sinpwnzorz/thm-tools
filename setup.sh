@@ -20,7 +20,7 @@ echo "Installing Rshells..."
 }
 {
     # Copy Rshell files
-    cp Rshells/* /tmp/Rshells/ && echo "DONE - Rshells files copied."
+    cp -r Rshells/* /tmp/Rshells/ && echo "DONE - Rshells files copied."
 } || {
     echo "Failed to copy Rshells files."
     exit 1
