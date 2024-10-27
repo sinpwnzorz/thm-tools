@@ -1,15 +1,13 @@
 # Project Name
 
-A brief description of your project.
+Quickly deployable toolbox
 
-## Installation
+## Installation Steps:
 
 ```bash
 git clone https://github.com/sinpwnzorz/thm-tools.git
-cd your-repo
+cd thm-tools
 chmod +x setup.sh
 ./setup.sh
 ```
-## For help with Rshells
-```bash
-rshell OR rshell -h OR rshell --help
+# Enjoy
