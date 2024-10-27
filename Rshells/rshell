@@ -11,7 +11,7 @@ show_help() {
     echo "Available shells in /tmp/Rshells/:"
     # List all files in /tmp/Rshells/
     if [ -d "/tmp/Rshells/" ]; then
-        ls -1 /tmp/rshells/
+        ls -1 /tmp/Rshells/
     else
         echo "No directory found at /tmp/Rshells/"
     fi
