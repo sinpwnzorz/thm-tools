@@ -3,7 +3,7 @@
 # Prompt for values
 echo "Your IP address is: $(cat /tmp/thmip.txt) - Leave listen address blank to use it."
 read -p "Enter listen address: " valueA
-read -p "Enter listen port? " valueB
+read -p "Enter listen port: " valueB
 
 # Use the IP from the file if valueA is left blank
 if [ -z "$valueA" ]; then
