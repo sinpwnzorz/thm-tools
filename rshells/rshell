@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Function to display help
+show_help() {
+    echo "Usage: $(basename "$0") [options]"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help    Show this help message and exit"
+    echo "  -v, --version Show the version of the script"
+    echo ""    
+    echo "Available shells in /tmp/rshells/:"
+    # List all files in /tmp/rshells/
+    if [ -d "/tmp/rshells/" ]; then
+        ls -1 /tmp/rshells/
+    else
+        echo "No directory found at /tmp/rshells/"
+    fi
+    echo "Go to the specific tool you need to get more information"
+    exit 0
+}
+
+# Function to display version
+show_version() {
+    echo "$(basename "$0") version 1.0.0"
+    exit 0
+}
+
+# Parse command-line arguments
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            ;;
+        -v|--version)
+            show_version
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            ;;
+    esac
+    shift
+done
+
+# Main script logic goes here
+echo "No options provided. Use -h or --help for usage information."
