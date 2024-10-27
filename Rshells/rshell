@@ -8,12 +8,12 @@ show_help() {
     echo "  -h, --help    Show this help message and exit"
     echo "  -v, --version Show the version of the script"
     echo ""    
-    echo "Available shells in /tmp/rshells/:"
-    # List all files in /tmp/rshells/
-    if [ -d "/tmp/rshells/" ]; then
+    echo "Available shells in /tmp/Rshells/:"
+    # List all files in /tmp/Rshells/
+    if [ -d "/tmp/Rshells/" ]; then
         ls -1 /tmp/rshells/
     else
-        echo "No directory found at /tmp/rshells/"
+        echo "No directory found at /tmp/Rshells/"
     fi
     echo "Go to the specific tool you need to get more information"
     exit 0
