@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# DirScan - A helper script for using dirb
+
+# Check for existing target files in /tmp/
+TARGET_FILES=($(ls /tmp/target*.txt 2>/dev/null))
+TARGET_COUNT=${#TARGET_FILES[@]}
+
+# If saved targets exist, list them out, otherwise prompt for a new IP directly
+if [[ $TARGET_COUNT -gt 0 ]]; then
+    echo "$TARGET_COUNT targets in memory. Select a number:"
+    for i in "${!TARGET_FILES[@]}"; do
+        IP=$(<"${TARGET_FILES[$i]}")
+        echo "$((i + 1)) - $IP"
+    done
+    echo "(Leave blank to enter a new IP)"
+    read -p "Your choice: " CHOICE
+else
+    echo "No saved targets found."
+    CHOICE=""
+fi
+
+# Handle target selection or new IP entry
+if [[ -z "$CHOICE" ]]; then
+    read -p "Enter new IP (with port if needed, e.g., 10.10.10.10:8080): " NEW_IP
+    if [[ -n "$NEW_IP" ]]; then
+        read -p "Save as a quick target? (y/n): " SAVE_CHOICE
+        if [[ "$SAVE_CHOICE" == "y" ]]; then
+            NEW_TARGET="/tmp/target$((TARGET_COUNT + 1)).txt"
+            echo "$NEW_IP" > "$NEW_TARGET"
+            echo "Saved as $NEW_TARGET"
+        fi
+        TARGET_IP="$NEW_IP"
+    else
+        echo "No IP entered. Exiting."
+        exit 1
+    fi
+else
+    # Ensure that CHOICE is a valid number and points to an existing file
+    if [[ "$CHOICE" =~ ^[0-9]+$ ]] && (( CHOICE > 0 && CHOICE <= TARGET_COUNT )); then
+        TARGET_INDEX=$((CHOICE - 1))
+        TARGET_IP=$(<"${TARGET_FILES[$TARGET_INDEX]}")
+    else
+        echo "Invalid selection. Exiting."
+        exit 1
+    fi
+fi
+
+# List available wordlists with adjusted paths
+WORDLISTS=(
+    "/usr/share/wordlists/dirb/common.txt"
+    "/usr/share/wordlists/dirb/big.txt"
+    "/usr/share/wordlists/dirb/small.txt"
+    "/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt"
+    "/usr/share/wordlists/dirbuster/directory-list-2.3-big.txt"
+    "/usr/share/wordlists/dirbuster/apache-user-enum-1.0.txt"
+)
+
+echo "Select a wordlist:"
+for i in "${!WORDLISTS[@]}"; do
+    WORDLIST_NAME=$(basename "${WORDLISTS[$i]}")
+    echo "$((i + 1)) - $WORDLIST_NAME"
+done
+
+# Prompt for wordlist selection
+read -p "Wordlist number: " WORDLIST_CHOICE
+if [[ -z "$WORDLIST_CHOICE" || ! "$WORDLIST_CHOICE" =~ ^[0-9]+$ || $WORDLIST_CHOICE -lt 1 || $WORDLIST_CHOICE -gt ${#WORDLISTS[@]} ]]; then
+    echo "Invalid selection. Exiting."
+    exit 1
+fi
+
+# Get the selected wordlist
+SELECTED_WORDLIST="${WORDLISTS[$((WORDLIST_CHOICE - 1))]}"
+
+# Run dirb with the selected target IP and wordlist
+echo "Running dirb on $TARGET_IP with wordlist $SELECTED_WORDLIST..."
+dirb "http://$TARGET_IP" "$SELECTED_WORDLIST" -o /tmp/found-directories.txt
+
+# Inform user where to find the results
+echo "Scan complete! Results saved to /tmp/found-directories.txt."
