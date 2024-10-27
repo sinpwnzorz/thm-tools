@@ -3,7 +3,7 @@
 # Handle rshell tools
 echo "Installing Sinpwnzorz's Try-Hack-Me toolbox!"
 echo "Installing Rshells"
-rm -f /tmp/Rshells && mkdir /tmp/Rshells && cp Rshells/* /tmp/Rshells/ && export PATH="$PATH:/tmp/Rshells/" && rm -f Rshells/ && echo "Rshells DONE - type \"rshell\" for help"
+rm -f /tmp/Rshells && mkdir /tmp/Rshells && cp Rshells/* /tmp/Rshells/ && export PATH="$PATH:/tmp/Rshells/" && chmod +x /tmp/Rshells/ &&rm -f Rshells/ && echo "Rshells DONE - type \"rshell\" for help"
 # Contains:
 # Rshells/rshell
 # Rshells/genrshell-php
